@@ -146,6 +146,9 @@ struct nrc_spi_priv {
 
 	/* work, kthread, ... */
 	struct delayed_work work;
+	struct delayed_work poll;
+	u32 polling_interval;
+	bool stopping;
 	struct task_struct *kthread;
 	wait_queue_head_t wait; /* wait queue */
 
@@ -1108,6 +1111,22 @@ static void spi_poll_status(struct work_struct *work)
 	wake_up_interruptible(&priv->wait);
 }
 
+static void spi_poll_periodic(struct work_struct *work)
+{
+	struct nrc_spi_priv *priv = container_of(to_delayed_work(work),
+			struct nrc_spi_priv, poll);
+	struct spi_device *spi = priv->spi;
+
+#ifdef CONFIG_NRC_HIF_PRINT_FLOW_CONTROL
+	nrc_dbg(NRC_DBG_HIF, "%s\n", __func__);
+#endif
+	spi_update_status(spi);
+	wake_up_interruptible(&priv->wait);
+	if (!priv->stopping) {
+		schedule_delayed_work(&priv->poll, msecs_to_jiffies(priv->polling_interval));
+	}
+}
+
 static int spi_start(struct nrc_hif_device *dev)
 {
 	struct nrc_spi_priv *priv = dev->priv;
@@ -1120,24 +1139,32 @@ static int spi_start(struct nrc_hif_device *dev)
 	INIT_DELAYED_WORK(&priv->work, spi_poll_status);
 
 	/* Enable interrupt */
+	if (spi->irq >= 0) {
 #ifdef CONFIG_SUPPORT_THREADED_IRQ
-	ret = request_threaded_irq(gpio_to_irq(spi->irq), NULL, spi_irq,
-			IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
-			"spi-irq", dev);
+		ret = request_threaded_irq(gpio_to_irq(spi->irq), NULL, spi_irq,
+				  IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+				  "spi-irq", dev);
 #else
-	ret = request_irq(gpio_to_irq(spi->irq), spi_irq,
-			IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
-			"spi-irq", dev);
+		ret = request_irq(gpio_to_irq(spi->irq), spi_irq,
+				  IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+				  "spi-irq", dev);
 #endif
-	atomic_set(&irq_enabled, 1);
+		atomic_set(&irq_enabled, 1);
 
-	if (ret < 0) {
+		if (ret < 0) {
 #ifdef CONFIG_SUPPORT_THREADED_IRQ
-		nrc_dbg(NRC_DBG_HIF, "request_irq() is failed\n");
+			nrc_dbg(NRC_DBG_HIF, "request_irq() is failed\n");
 #else
-		nrc_dbg(NRC_DBG_HIF, "request_threaded_irq() is failed\n");
+			nrc_dbg(NRC_DBG_HIF, "request_threaded_irq() is failed\n");
 #endif
-		goto kill_kthread;
+			goto kill_kthread;
+		}
+	} else {
+		priv->stopping = 0;
+		priv->polling_interval = spi_polling_interval;
+		dev_info(&spi->dev, "polling at %u ms\n", priv->polling_interval);
+		INIT_DELAYED_WORK(&priv->poll, spi_poll_periodic);
+		schedule_delayed_work(&priv->poll, msecs_to_jiffies(priv->polling_interval));
 	}
 
 	ret = spi_update_status(spi);
@@ -1313,7 +1340,11 @@ void spi_reset(struct nrc_hif_device *hdev)
 
 static int spi_stop(struct nrc_hif_device *dev)
 {
-	//struct nrc_spi_priv *priv = dev->priv;
+	struct nrc_spi_priv *priv = dev->priv;
+
+	priv->stopping = 1;
+	cancel_delayed_work(&priv->poll);
+
 	//struct spi_device *spi = priv->spi;
 	//BUG_ON(priv == NULL);
 	//BUG_ON(spi == NULL);
@@ -1427,8 +1458,10 @@ static void spi_disable_irq(struct nrc_hif_device *hdev)
 	struct nrc_spi_priv *priv = hdev->priv;
 	struct spi_device *spi = priv->spi;
 
-	//disable_irq(gpio_to_irq(spi->irq));
-	disable_irq_nosync(gpio_to_irq(spi->irq));
+	if (spi->irq >= 0) {
+		//disable_irq(gpio_to_irq(spi->irq));
+		disable_irq_nosync(gpio_to_irq(spi->irq));
+	}
 }
 
 static void spi_enable_irq(struct nrc_hif_device *hdev)
@@ -1436,7 +1469,8 @@ static void spi_enable_irq(struct nrc_hif_device *hdev)
 	struct nrc_spi_priv *priv = hdev->priv;
 	struct spi_device *spi = priv->spi;
 
-	enable_irq(gpio_to_irq(spi->irq));
+	if (spi->irq >= 0)
+		enable_irq(gpio_to_irq(spi->irq));
 }
 
 static int spi_status_irq(struct nrc_hif_device *hdev)
@@ -1505,9 +1539,11 @@ static int spi_suspend_rx_thread(struct nrc_hif_device *hdev)
 	struct nrc_spi_priv *priv = hdev->priv;
 	struct spi_device *spi = priv->spi;
 
-	if (atomic_read(&irq_enabled) == 1) {
-		disable_irq_nosync(gpio_to_irq(spi->irq));
-		atomic_set(&irq_enabled, 0);
+	if (spi->irq >= 0) {
+		if (atomic_read(&irq_enabled) == 1) {
+			disable_irq_nosync(gpio_to_irq(spi->irq));
+			atomic_set(&irq_enabled, 0);
+		}
 	}
 
 	cspi_suspend = true;
@@ -1519,9 +1555,11 @@ static int spi_resume_rx_thread(struct nrc_hif_device *hdev)
 	struct nrc_spi_priv *priv = hdev->priv;
 	struct spi_device *spi = priv->spi;
 
-	if (atomic_read(&irq_enabled) == 0) {
-		enable_irq(gpio_to_irq(spi->irq));
-		atomic_set(&irq_enabled, 1);
+	if (spi->irq >= 0) {
+		if (atomic_read(&irq_enabled) == 0) {
+			enable_irq(gpio_to_irq(spi->irq));
+			atomic_set(&irq_enabled, 1);
+		}
 	}
 
 	cspi_suspend = false;
@@ -1671,13 +1709,15 @@ static int c_spi_probe(struct spi_device *spi)
 	c_spi_config(spi);
 	spi_set_default_credit(priv);
 
-	/* Claim gpio used for irq */
-	if (gpio_request(spi->irq, "spi-irq") < 0) {
-		nrc_dbg(NRC_DBG_HIF, "gpio_reqeust() is failed\n");
-		gpio_free(spi->irq);
-		goto fail;
+	if (spi->irq >= 0) {
+		/* Claim gpio used for irq */
+		if (gpio_request(spi->irq, "spi-irq") < 0) {
+			nrc_dbg(NRC_DBG_HIF, "gpio_reqeust() is failed\n");
+			gpio_free(spi->irq);
+			goto fail;
+		}
+		gpio_direction_input(spi->irq);
 	}
-	gpio_direction_input(spi->irq);
 
 #if defined(SPI_DBG)
 	/* Claim gpio used for debugging */
@@ -1709,7 +1749,9 @@ static int c_spi_remove(struct spi_device *spi)
 	struct nrc_spi_priv *priv = hdev->priv;
 #endif
 	//free_irq(gpio_to_irq(spi->irq), hdev);
-	gpio_free(spi->irq);
+	if (spi->irq >= 0) {
+		gpio_free(spi->irq);
+	}
 #if defined(SPI_DBG)
 	gpio_free(SPI_DBG);
 #endif
@@ -1817,8 +1859,10 @@ int nrc_hif_cspi_exit(struct nrc_hif_device *hdev)
 
 	cancel_delayed_work(&priv->work);
 
-	synchronize_irq(gpio_to_irq(spi->irq));
-	free_irq(gpio_to_irq(spi->irq), hdev);
+	if (spi->irq >= 0) {
+		synchronize_irq(gpio_to_irq(spi->irq));
+		free_irq(gpio_to_irq(spi->irq), hdev);
+	}
 
 	spi_unregister_device(spi);
 	spi_unregister_driver(&spi_driver);
