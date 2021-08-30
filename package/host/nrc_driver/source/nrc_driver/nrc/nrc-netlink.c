@@ -1617,7 +1617,7 @@ int nrc_netlink_init(struct nrc *nw)
 
 void nrc_netlink_exit(void)
 {
-	pr_err("%s", __func__);
+	//pr_err("%s", __func__);
 	netlink_unregister_notifier(&nl_umac_netlink_notifier);
 	genl_unregister_family(&nrc_nl_fam);
 }

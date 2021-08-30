@@ -294,7 +294,7 @@ void nrc_download_fw(struct nrc *nw)
 
 	nrc_hif_suspend(hdev);
 
-	pr_err("start FW %d\n", priv->num_chunks);
+	//pr_err("start FW %d\n", priv->num_chunks);
 	if (fastboot) {
 		nrc_fw_send_info(nw, priv);
 		udelay(10);
@@ -305,7 +305,7 @@ void nrc_download_fw(struct nrc *nw)
 			nrc_fw_send_frag(nw, priv);
 		} while (nrc_fw_check_next_frag(nw, priv));
 	}
-	pr_err("end FW\n");
+	//pr_err("end FW\n");
 
 	priv->fw_requested = false;
 }
