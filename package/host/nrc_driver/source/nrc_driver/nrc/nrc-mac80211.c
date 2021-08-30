@@ -3105,6 +3105,9 @@ int nrc_register_hw(struct nrc *nw)
 	/* debugfs */
 	nrc_init_debugfs(nw);
 
+	dev_info(&nw->pdev->dev, "registered network device %s\n",
+		 wiphy_name(hw->wiphy));
+
 	return 0;
 }
 
