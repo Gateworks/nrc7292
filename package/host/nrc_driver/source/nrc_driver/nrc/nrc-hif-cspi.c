@@ -1662,8 +1662,8 @@ static void c_spi_config(struct spi_device *spi)
 		BUG();
 	}
 
-	nrc_dbg(NRC_DBG_HIF,
-	"Newracom IEEE802.11 C-SPI: chipid=%04x, sw_id=%04x, board_id=%04X\n",
+	dev_info(&spi->dev,
+		"Newracom IEEE802.11 C-SPI: chipid=%04x, sw_id=%04x, board_id=%04X\n",
 		sys->chip_id, sys->sw_id, sys->board_id);
 	if (sys->sw_id == SW_MAGIC_FOR_BOOT)
 		nrc_dbg(NRC_DBG_HIF, "Boot loader\n");

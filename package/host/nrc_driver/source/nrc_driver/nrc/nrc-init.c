@@ -453,6 +453,7 @@ static int nrc_platform_probe(struct platform_device *pdev)
 	struct nrc *nw;
 	int ret;
 
+	printk("%s: Newracom nrc7292 v1.3.3\n", pdev->name);
 	nw = nrc_alloc_hw(pdev);
 	if (!nw)
 		return -ENOMEM;
