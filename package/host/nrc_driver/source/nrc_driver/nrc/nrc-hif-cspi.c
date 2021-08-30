@@ -1360,8 +1360,10 @@ static int spi_stop(struct nrc_hif_device *dev)
 #else
 	spi_reset(dev);
 #endif
-	gpio_set_value(RPI_GPIO_FOR_PS, 1);
-	gpio_free(RPI_GPIO_FOR_PS);
+	if (power_save >= NRC_PS_DEEPSLEEP_TIM) {
+		gpio_set_value(RPI_GPIO_FOR_PS, 1);
+		gpio_free(RPI_GPIO_FOR_PS);
+	}
 	return 0;
 }
 

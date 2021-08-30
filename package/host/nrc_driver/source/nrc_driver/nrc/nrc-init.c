@@ -503,10 +503,11 @@ static int nrc_platform_remove(struct platform_device *pdev)
 		msleep(100);
 		if (counter++ > 10) {
 			atomic_set(&nw->d_deauth.delayed_deauth, 0);
-			gpio_set_value(RPI_GPIO_FOR_PS, 0);
+			if (power_save >= NRC_PS_DEEPSLEEP_TIM)
+				gpio_set_value(RPI_GPIO_FOR_PS, 0);
 			break;
-	}
 		}
+	}
 
 	nw->drv_state = NRC_DRV_CLOSING;
 	cancel_delayed_work(&nw->check_start);
