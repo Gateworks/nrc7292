@@ -103,7 +103,7 @@ static void * nrc_dump_load(int len)
 	}
 
 	for(i=0; i < ret;) {
-		nrc_dbg(NRC_DBG_STATE,"%02X %02X %02X %02X %02X %02X %02X %02X ",
+		nrc_dbg(NRC_DBG_BD,"%02X %02X %02X %02X %02X %02X %02X %02X ",
 							 g_bd_buf[i],
 							 g_bd_buf[i+1],
 							 g_bd_buf[i+2],
@@ -181,9 +181,8 @@ struct wim_bd_param * nrc_read_bd_tx_pwr(uint8_t *country_code)
 
 	nrc_dbg(NRC_DBG_STATE, "Major %02X Minor %02X Total len %04X Num_country %04X Checksum %04X",
 		bd->ver_major, bd->ver_minor, bd->total_len, bd->num_country, bd->checksum_data);
-
 	for(i=0; i < bd->total_len;) {
-		nrc_dbg(NRC_DBG_STATE,"%02X %02X %02X %02X %02X %02X %02X %02X",
+		nrc_dbg(NRC_DBG_BD,"%02X %02X %02X %02X %02X %02X %02X %02X",
 				bd->data[i],
 				bd->data[i+1],
 				bd->data[i+2],

@@ -30,6 +30,7 @@ enum NRC_DEBUG_MASK {
 	NRC_DBG_PS		= 6,
 	NRC_DBG_STATS	= 7,
 	NRC_DBG_STATE	= 8,
+	NRC_DBG_BD = 9,
 };
 #define NRC_DBG_MASK_ANY   (0xFFFFFFFF)
 

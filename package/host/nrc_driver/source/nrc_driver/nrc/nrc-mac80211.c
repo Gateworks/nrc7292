@@ -2555,10 +2555,10 @@ int nrc_reg_notifier(struct wiphy *wiphy,
 	//Read board data and save buffer
 	bd_param = nrc_read_bd_tx_pwr(request->alpha2);
 	if(bd_param) {
-		nrc_dbg(NRC_DBG_STATE,"type %04X length %04X checksum %04X",
+		nrc_dbg(NRC_DBG_BD,"type %04X length %04X checksum %04X",
 				bd_param->type, bd_param->length, bd_param->checksum);
 		for(i=0; i < bd_param->length - 2;) {
-			nrc_dbg(NRC_DBG_STATE,"%02X %02X %02X %02X %02X %02X %02X %02X",
+			nrc_dbg(NRC_DBG_BD,"%02X %02X %02X %02X %02X %02X %02X %02X",
 				(bd_param->value[i]),
 				(bd_param->value[i+1]),
 				(bd_param->value[i+2]),
