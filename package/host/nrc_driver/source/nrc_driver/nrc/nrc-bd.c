@@ -78,13 +78,24 @@ static void * nrc_dump_load(int len)
 	char filepath[64];
 
 	sprintf(filepath, "/lib/firmware/%s", bd_name);
+#if KERNEL_VERSION(5,0,0) > NRC_TARGET_KERNEL_VERSION
 	old_fs = get_fs();
-	set_fs(KERNEL_DS);
+	set_fs( get_ds() );
+#elif KERNEL_VERSION(5,10,0) > NRC_TARGET_KERNEL_VERSION
+	old_fs = get_fs();
+	set_fs( KERNEL_DS );
+#else
+	old_fs = force_uaccess_begin();
+#endif
 
 	filp = filp_open(filepath, O_RDONLY, 0);
 	if (IS_ERR(filp)) {
-		pr_err("Failed to load borad data, error:%d",IS_ERR(filp));
-		set_fs(old_fs);
+		pr_err("Failed to load board data, error:%d",IS_ERR(filp));
+#if KERNEL_VERSION(5,10,0) > NRC_TARGET_KERNEL_VERSION
+	set_fs(old_fs);
+#else
+	force_uaccess_end(old_fs);
+#endif
 		return NULL;
 	}
 
@@ -95,7 +106,11 @@ static void * nrc_dump_load(int len)
 #endif
 
 	filp_close(filp, NULL);
+#if KERNEL_VERSION(5,10,0) > NRC_TARGET_KERNEL_VERSION
 	set_fs(old_fs);
+#else
+	force_uaccess_end(old_fs);
+#endif
 
 	if(ret < NRC_BD_HEADER_LENGTH) {
 		pr_err("Invalid data size(%d)", ret);

@@ -305,12 +305,19 @@ static int halow_set_dut(struct sk_buff *skb, struct genl_info *info)
 {
 	uint8_t param_name[MAX_HALOW_SIZE] = {0,};
 	uint8_t str_value[MAX_HALOW_SIZE] = {0,};
+#if KERNEL_VERSION(5, 11, 0) <= NRC_TARGET_KERNEL_VERSION
+	nla_strscpy(param_name, info->attrs[NL_HALOW_PARAM_NAME],
+			nla_len(info->attrs[NL_HALOW_PARAM_NAME]));
 
+	nla_strscpy(str_value, info->attrs[NL_HALOW_PARAM_STR_VAL],
+			nla_len(info->attrs[NL_HALOW_PARAM_STR_VAL]));
+#else
 	nla_strlcpy(param_name, info->attrs[NL_HALOW_PARAM_NAME],
 			nla_len(info->attrs[NL_HALOW_PARAM_NAME]));
 
 	nla_strlcpy(str_value, info->attrs[NL_HALOW_PARAM_STR_VAL],
 			nla_len(info->attrs[NL_HALOW_PARAM_STR_VAL]));
+#endif
 
 	nrc_dbg(NRC_DBG_CAPI, "%s(name:\"%s\",val:\"%s\")", __func__,
 			param_name, str_value);
@@ -523,11 +530,19 @@ static int capi_sta_set_11n(struct sk_buff *skb, struct genl_info *info)
 	uint8_t str_value[MAX_CAPIREQ_SIZE] = {0,};
 	uint16_t u8_value = 0;
 
+#if KERNEL_VERSION(5, 11, 0) <= NRC_TARGET_KERNEL_VERSION
+	nla_strscpy(param_name, info->attrs[NL_WFA_CAPI_PARAM_NAME],
+			nla_len(info->attrs[NL_WFA_CAPI_PARAM_NAME]));
+
+	nla_strscpy(str_value, info->attrs[NL_WFA_CAPI_PARAM_STR_VAL],
+			nla_len(info->attrs[NL_WFA_CAPI_PARAM_STR_VAL]));
+#else
 	nla_strlcpy(param_name, info->attrs[NL_WFA_CAPI_PARAM_NAME],
 			nla_len(info->attrs[NL_WFA_CAPI_PARAM_NAME]));
 
 	nla_strlcpy(str_value, info->attrs[NL_WFA_CAPI_PARAM_STR_VAL],
 			nla_len(info->attrs[NL_WFA_CAPI_PARAM_STR_VAL]));
+#endif
 
 	nrc_dbg(NRC_DBG_CAPI, "%s(name:\"%s\",val:\"%s\")", __func__,
 			param_name, str_value);
@@ -1368,7 +1383,11 @@ static int nrc_inject_frame(struct sk_buff *skb, struct genl_info *info)
 	buffer = dev_alloc_skb(nrc_nw->hw->extra_tx_headroom + length);
 	skb_reserve(buffer, nrc_nw->hw->extra_tx_headroom);
 	frame = skb_put(buffer, length - 1);
+#if KERNEL_VERSION(5, 11, 0) <= NRC_TARGET_KERNEL_VERSION
+	nla_strscpy(frame, info->attrs[NL_FRAME_INJECTION_BUFFER], length);
+#else
 	nla_strlcpy(frame, info->attrs[NL_FRAME_INJECTION_BUFFER], length);
+#endif
 
 	nrc_xmit_injected_frame(nrc_nw, NULL, NULL, buffer);
 
@@ -1383,8 +1402,13 @@ static int nrc_set_ie(struct sk_buff *skb, struct genl_info *info)
 	ie.eid = nla_get_u16(info->attrs[NL_SET_IE_EID]);
 	ie.length = nla_get_u8(info->attrs[NL_SET_IE_LENGTH]);
 
+#if KERNEL_VERSION(5, 11, 0) <= NRC_TARGET_KERNEL_VERSION
+	nla_strscpy(ie.data, info->attrs[NL_SET_IE_DATA],
+		nla_len(info->attrs[NL_SET_IE_DATA]));
+#else
 	nla_strlcpy(ie.data, info->attrs[NL_SET_IE_DATA],
 		nla_len(info->attrs[NL_SET_IE_DATA]));
+#endif
 	wim_skb = nrc_wim_alloc_skb(nrc_nw, WIM_CMD_SET_IE,
 		sizeof(struct wim_set_ie_param));
 
@@ -1416,7 +1440,11 @@ static int nrc_set_sae(struct sk_buff *skb, struct genl_info *info)
 		else nrc_dbg(NRC_DBG_WIM, "%x", *(info->attrs[NL_SET_SAE_DATA]+i));
 	}
 	// nrc_dbg(NRC_DBG_WIM, "nrc-netlink driver Log (before copying data)\n");
+#if KERNEL_VERSION(5, 11, 0) <= NRC_TARGET_KERNEL_VERSION
+	nla_strscpy(sae.data, info->attrs[NL_SET_SAE_DATA], sae.length+1);
+#else
 	nla_strlcpy(sae.data, info->attrs[NL_SET_SAE_DATA], sae.length+1);
+#endif
 	wim_skb = nrc_wim_alloc_skb(nrc_nw, WIM_CMD_SET_SAE,
 		sizeof(struct wim_set_sae_param));
 
