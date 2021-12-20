@@ -538,8 +538,10 @@ static struct sk_buff *spi_rx_skb(struct spi_device *spi,
 	if (hif->type >= HIF_TYPE_MAX || hif->len == 0) {
 		nrc_dbg(NRC_DBG_HIF, "rxslot:(h=%d,t=%d)\n",
 				priv->slot[RX_SLOT].head, priv->slot[RX_SLOT].tail);
-		print_hex_dump(KERN_DEBUG, "rxskb ", DUMP_PREFIX_NONE, 16, 1,
-				skb->data, 480, false);
+		if (test_bit(NRC_DBG_HIF, &nrc_debug_mask)) {
+			print_hex_dump(KERN_DEBUG, "rxskb ", DUMP_PREFIX_NONE, 16, 1,
+					skb->data, 480, false);
+		}
 		msleep(100);
 		//BUG();
 		goto fail;
