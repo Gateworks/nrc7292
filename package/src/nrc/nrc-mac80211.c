@@ -24,6 +24,7 @@
 #include "nrc-vendor.h"
 #include "nrc-stats.h"
 #include "nrc-dump.h"
+#include <linux/device.h>
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
@@ -4807,11 +4808,14 @@ int nrc_register_hw(struct nrc *nw)
 
 	ret = ieee80211_register_hw(hw);
 	if (ret < 0) {
-		nrc_mac_dbg("ieee80211_register_hw failed (%d)", ret);
+		dev_err(&hw->wiphy->dev, "ieee80211_register_hw failed (%d)", ret);
 		ieee80211_free_hw(hw);
 		hw = NULL;
 		return -EINVAL;
 	}
+
+	dev_info(&hw->wiphy->dev, "registered network device %s\n",
+		 wiphy_name(hw->wiphy));
 
 	return 0;
 }
