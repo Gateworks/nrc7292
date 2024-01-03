@@ -211,6 +211,8 @@
 #endif
 /* You can enable forcely in current version */
 //#define CONFIG_SPI_USE_DT
+/* need to revert commit bdc7ca008e1f "spi: Remove unused function spi_busnum_to_master()" */
+#undef CONFIG_SPI_USE_DT
 
 #if KERNEL_VERSION(5, 4, 0) <= NRC_TARGET_KERNEL_VERSION
 #define CONFIG_USE_MAX_MTU
