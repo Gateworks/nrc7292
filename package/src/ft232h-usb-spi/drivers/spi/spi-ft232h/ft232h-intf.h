@@ -192,6 +192,7 @@ struct ft232h_intf_ops {
  */
 struct mpsse_spi_platform_data {
 	const struct ft232h_intf_ops *ops;
+	struct spi_board_info *info;	/* SPI device details: cs, irq, max_freq */
 };
 
 #endif /* __LINUX_FT232H_INTF_H */

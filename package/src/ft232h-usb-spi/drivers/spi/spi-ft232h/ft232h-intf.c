@@ -679,7 +679,7 @@ static int ftdi_mpsse_set_cs_pin(struct usb_interface *intf, int level)
 	return ret;
 }
 
-static const struct ft232h_intf_ops ft232h_intf_ops = {
+const struct ft232h_intf_ops ft232h_intf_ops = {
 	.lock = ftdi_lock,
 	.unlock = ftdi_unlock,
 	.ctrl_xfer = ftdi_ctrl_xfer,
@@ -794,9 +794,8 @@ static void ftdi_mpsse_gpio_remove(struct usb_interface *intf)
 		gpiod_remove_lookup_table(priv->lookup_gpios);
 }
 
-static int ftdi_mpsse_spi_probe(struct usb_interface *intf)
+static int ftdi_mpsse_spi_probe(struct usb_interface *intf, const struct mpsse_spi_platform_data *plat_data)
 {
-	const struct mpsse_spi_platform_data *plat_data = &ft232h_mpsse_spi_plat_data;
 	struct ft232h_intf_priv *priv = usb_get_intfdata(intf);
 	struct device *parent = &intf->dev;
 	struct platform_device *pdev;
@@ -891,7 +890,7 @@ int ft232h_intf_probe(struct usb_interface *intf, const struct usb_device_id *id
 	if (priv->id < 0)
 		return priv->id;
 
-	ret = ftdi_mpsse_spi_probe(intf);
+	ret = ftdi_mpsse_spi_probe(intf, (struct mpsse_spi_platform_data*)id->driver_info);
 	if (ret < 0)
 		goto err;
 

@@ -538,6 +538,10 @@ static int ftdi_spi_probe(struct platform_device *pdev)
 		}
 	}
 
+	/* register SPI device depending on config */
+	if (pd->info && !spi_new_device(master, pd->info))
+		dev_err(&pdev->dev, "failed to add SPI device for %s on %s\n", pd->info->modalias, dev_name(&master->dev));
+
 	return 0;
 err:
 	platform_set_drvdata(pdev, NULL);
