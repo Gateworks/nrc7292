@@ -40,6 +40,11 @@ extern struct ft232h_intf_ops ft232h_intf_ops;
 static const struct mpsse_spi_platform_data gw16146_spi_cfg_plat_data = {
 	.ops			= &ft232h_intf_ops,
 	.info			= &gw16146_board_info,
+	/* active-high reset on FTDI pin 29 (GPIOH5, gpio offset 10) */
+	.reset_gpio = 10,
+	.reset_active_high = 1,
+	.reset_assert_ms = 100,
+	.reset_deassert_ms = 100,
 };
 
 static struct usb_device_id ft232h_usb_table[] = {

@@ -851,6 +851,7 @@ int ft232h_intf_probe(struct usb_interface *intf, const struct usb_device_id *id
 	struct device *dev = &intf->dev;
 	struct usb_host_interface *iface_desc;
 	struct usb_endpoint_descriptor *endpoint;
+	struct mpsse_spi_platform_data *pd = (struct mpsse_spi_platform_data*)id->driver_info;
 	unsigned int i;
 	int ret = 0;
 
@@ -894,13 +895,27 @@ int ft232h_intf_probe(struct usb_interface *intf, const struct usb_device_id *id
 	if (priv->id < 0)
 		return priv->id;
 
-	ret = ftdi_mpsse_spi_probe(intf, (struct mpsse_spi_platform_data*)id->driver_info);
+	ret = ftdi_mpsse_spi_probe(intf, pd);
 	if (ret < 0)
 		goto err;
 
 	ret = ftdi_mpsse_gpio_probe(intf);
 	if (ret < 0)
 		goto err;
+
+	if (pd->reset_gpio != -1) {
+		dev_info(dev, "asserting reset GPIO%d\n", pd->reset_gpio);
+		ret = ftdi_mpsse_gpio_direction_output(&priv->mpsse_gpio, pd->reset_gpio,
+						       pd->reset_active_high ? 1 : 0);
+		if (ret < 0)
+			goto err;
+		mdelay(pd->reset_assert_ms);
+		ret = ftdi_mpsse_gpio_direction_output(&priv->mpsse_gpio, pd->reset_gpio,
+						       pd->reset_active_high ? 0 : 1);
+		if (ret < 0)
+			goto err;
+		mdelay(pd->reset_deassert_ms);
+	}
 
 	return 0;
 
