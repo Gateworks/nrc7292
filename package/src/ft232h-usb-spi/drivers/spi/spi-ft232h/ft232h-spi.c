@@ -77,7 +77,7 @@ static void ftdi_spi_set_cs(struct spi_device *spi, bool enable)
 	struct ftdi_spi *priv = spi_controller_get_devdata(spi->master);
 	int ret;
 
-	dev_dbg(&priv->pdev->dev, "%s: CS %u, cs mode %d, val %d\n",
+	dev_dbg(&priv->pdev->dev, "%s: CS %u, cs mode %ld, val %d\n",
 			__func__, spi->chip_select, (spi->mode & SPI_CS_HIGH), enable);
 
 	ret = priv->iops->set_cs_pin(priv->intf, enable ? MPSSE_GPIO_HIGH : MPSSE_GPIO_LOW);
