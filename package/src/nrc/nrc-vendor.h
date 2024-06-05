@@ -37,13 +37,13 @@
  * GPIO pin number on the target device used for SPI IRQ.
  * [direction]: INPUT
  */
-#define TARGET_GPIO_SPI_IRQ				(5) //NRC7292 EVB
+#define TARGET_GPIO_SPI_IRQ				(-1) //disabled
 
 /**
  * GPIO pin number on the target device used to wake the nrc7292 from deep sleep.
  * [direction]: OUTPUT
  */
-#define TARGET_GPIO_FOR_PS				(20) //NRC7292 EVB
+#define TARGET_GPIO_FOR_PS				(-1) //disabled
 
 /**
  * GPIO pin number on the target device.
@@ -51,7 +51,7 @@
  * which will read signal from RPI_GPIO_FOR_RS for waking up target.
  * [direction]: INPUT
  */
-#define TARGET_GPIO_FOR_WAKEUP				(11) //NRC7292 EVB
+#define TARGET_GPIO_FOR_WAKEUP				(-1) //disabled
 
 /**
  * GPIO pin number on the target device.
@@ -59,13 +59,13 @@
  * which will raise signal to wake up host system.
  * [direction]: OUTPUT
  */
-#define TARGET_GPIO_FOR_WAKEUP_HOST			(10) //NRC7292 EVB
+#define TARGET_GPIO_FOR_WAKEUP_HOST			(-1) //disabled
 
 /**
  * GPIO pin number on target device used to reset the nrc7292.
  * [direction]: OUTPUT
  */
-#define TARGET_GPIO_FOR_RST				(4) //NRC7292 EVB
+#define TARGET_GPIO_FOR_RST				(-1) //disabled
 
 /**
  * GPIO configuration during deep sleep operation.
