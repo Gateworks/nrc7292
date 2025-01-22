@@ -341,7 +341,7 @@ static void * nrc_dump_load(struct nrc *nw, int len)
 	return buf;
 }
 
-uint16_t nrc_get_non_s1g_freq(uint8_t cc_index, uint8_t s1g_ch_index)
+static uint16_t nrc_get_non_s1g_freq(uint8_t cc_index, uint8_t s1g_ch_index)
 {
 	int i;
 	uint16_t ret = 0;
@@ -360,7 +360,7 @@ uint16_t nrc_get_non_s1g_freq(uint8_t cc_index, uint8_t s1g_ch_index)
 	return ret;
 }
 
-bool nrc_set_supp_ch_list(struct wim_bd_param *bd)
+static bool nrc_set_supp_ch_list(struct wim_bd_param *bd)
 {
 	int i, j;
 	bool ret = false;

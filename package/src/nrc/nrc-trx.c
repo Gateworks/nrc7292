@@ -53,7 +53,7 @@ static void setup_ba_session(struct nrc *nw, struct ieee80211_vif *vif, struct s
 /* TX */
 #define USF2SF(usf)	((usf == 0) ? 1 : (usf == 1) ? 10 : (usf == 2) ? 1000 : 10000)
 
-bool nrc_is_valid_vif (struct nrc *nw, struct ieee80211_vif *vif)
+static bool nrc_is_valid_vif (struct nrc *nw, struct ieee80211_vif *vif)
 {
 	u8 i;
 	for (i = 0; i < ARRAY_SIZE(nw->vif); i++) {
@@ -540,13 +540,13 @@ static int tx_h_put_iv(struct nrc_trx_data *tx)
 TXH(tx_h_put_iv, NL80211_IFTYPE_ALL);
 
 #if defined (CONFIG_CONVERT_NON_QOSDATA)
-bool ieee80211_is_data_data(__le16 fc)
+static bool ieee80211_is_data_data(__le16 fc)
 {
 	return (fc & cpu_to_le16(IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE)) ==
 	        cpu_to_le16(IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA);
 }
 
-void insert_qos_ctrl_field_in_skb(struct sk_buff *skb, unsigned int hdr_len) {
+static void insert_qos_ctrl_field_in_skb(struct sk_buff *skb, unsigned int hdr_len) {
 
 	struct ieee80211_hdr *mh = (void *) skb->data;
 	bool is_multi = ((mh->addr1[0] & 0x01) != 0);

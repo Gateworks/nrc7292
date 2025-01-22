@@ -22,7 +22,6 @@
 #include <linux/irqreturn.h>
 #include <linux/interrupt.h>
 #include <net/mac80211.h>
-#include <asm/unaligned.h>
 #include <linux/smp.h>
 #ifdef CONFIG_SUPPORT_AFTER_KERNEL_3_0_36
 #include <linux/timekeeping.h>
@@ -39,6 +38,9 @@
 #include "nrc-stats.h"
 #include "wim.h"
 
+#if KERNEL_VERSION(6,12,0) > NRC_TARGET_KERNEL_VERSION
+#include <asm/unaligned.h>
+#endif
 static bool once;
 static bool cspi_suspend;
 static atomic_t irq_enabled;
@@ -239,6 +241,7 @@ static u8 compute_crc7(const u8 *data, ssize_t len)
 	return crc >> 1;
 }
 
+extern void nrc_hif_cspi_read_credit(struct nrc_hif_device *hdev, int q, int *p_front, int *p_rear, int *p_credit);
 void nrc_hif_cspi_read_credit(struct nrc_hif_device *hdev, int q, int *p_front, int *p_rear, int *p_credit)
 {
 	struct nrc_spi_priv *priv = hdev->priv;
@@ -246,7 +249,6 @@ void nrc_hif_cspi_read_credit(struct nrc_hif_device *hdev, int q, int *p_front, 
 	*p_rear = priv->rear[q];
 	*p_credit = priv->credit_max[q];
 }
-
 
 static void get_sta_cnt(void *data,  struct ieee80211_sta *sta)
 {
@@ -1376,7 +1378,11 @@ no_restart:
 						nw->vif[nw->d_deauth.vif_index] = NULL;
 						nw->enable_vif[nw->d_deauth.vif_index] = false;
 						atomic_set(&nw->d_deauth.delayed_deauth, 0);
+#if KERNEL_VERSION(6,11,0) <= NRC_TARGET_KERNEL_VERSION
+						nrc_mac_stop(nw->hw, false);
+#else
 						nrc_mac_stop(nw->hw);
+#endif
 					}
 					while (atomic_read(&nw->d_deauth.delayed_deauth)) {
 						atomic_set(&nw->d_deauth.delayed_deauth, 0);
@@ -2031,7 +2037,7 @@ int spi_test(struct nrc_hif_device *hdev)
 	return 0;
 }
 
-void spi_wakeup(struct nrc_hif_device *hdev)
+static void spi_wakeup(struct nrc_hif_device *hdev)
 {
 	struct nrc_spi_priv *priv = hdev->priv;
 	struct spi_device *spi = priv->spi;
@@ -2340,7 +2346,7 @@ static void c_spi_config(struct nrc_spi_priv *priv)
 	c_spi_enable_irq(priv->spi, priv->spi->irq >= 0 ? true : false, CSPI_EIRQ_A_ENABLE);
 }
 
-int nrc_cspi_gpio_alloc(struct spi_device *spi)
+static int nrc_cspi_gpio_alloc(struct spi_device *spi)
 {
 #if defined(SPI_DBG)
 	/* Claim gpio used for debugging */
@@ -2399,7 +2405,7 @@ err:
 	return -EINVAL;
 }
 
-void nrc_cspi_gpio_free(struct spi_device *spi)
+static void nrc_cspi_gpio_free(struct spi_device *spi)
 {
 
 #if defined(SPI_DBG)

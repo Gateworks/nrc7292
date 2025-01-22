@@ -133,12 +133,12 @@ void nrc_wim_set_ndp_preq(struct nrc *nw, struct sk_buff *skb, u8 enable)
 	nrc_wim_skb_add_tlv(skb, WIM_TLV_NDP_PREQ, sizeof(u8), &enable);
 }
 
-void nrc_wim_set_rc_mode (struct nrc *nw, struct sk_buff *skb, u8 mode)
+static void nrc_wim_set_rc_mode (struct nrc *nw, struct sk_buff *skb, u8 mode)
 {
 	nrc_wim_skb_add_tlv(skb, WIM_TLV_RC_MODE, sizeof(u8), &mode);
 }
 
-void nrc_wim_set_default_mcs (struct nrc *nw, struct sk_buff *skb, u8 mcs)
+static void nrc_wim_set_default_mcs (struct nrc *nw, struct sk_buff *skb, u8 mcs)
 {
 	nrc_wim_skb_add_tlv(skb, WIM_TLV_DEFAULT_MCS, sizeof(u8), &mcs);
 }
@@ -619,7 +619,7 @@ bool nrc_wim_reset_hif_tx (struct nrc *nw)
 	return (ret == 0);
 }
 
-void nrc_wim_handle_fw_ready(struct nrc *nw)
+static void nrc_wim_handle_fw_ready(struct nrc *nw)
 {
 	struct nrc_hif_device *hdev = nw->hif;
 
@@ -640,7 +640,7 @@ void nrc_wim_handle_fw_ready(struct nrc *nw)
 }
 
 #define MAC_ADDR_LEN 6
-void nrc_wim_handle_fw_reload(struct nrc *nw)
+static void nrc_wim_handle_fw_reload(struct nrc *nw)
 {
 	nrc_ps_dbg("[%s,L%d]\n", __func__, __LINE__);
 	atomic_set(&nw->fw_state, NRC_FW_LOADING);
@@ -653,7 +653,7 @@ void nrc_wim_handle_fw_reload(struct nrc *nw)
 	}
 }
 
-void nrc_wim_handle_req_deauth(struct nrc *nw)
+static void nrc_wim_handle_req_deauth(struct nrc *nw)
 {
 	nrc_ps_dbg("[%s,L%d]\n", __func__, __LINE__);
 
@@ -795,7 +795,11 @@ static int nrc_wim_event_handler(struct nrc *nw,
 		nrc_wim_handle_req_deauth(nw);
 		break;
 	case WIM_EVENT_CSA:
+#if KERNEL_VERSION(6, 9, 0) <= NRC_TARGET_KERNEL_VERSION
+		ieee80211_csa_finish(vif, 0);
+#else
 		ieee80211_csa_finish(vif);
+#endif
 		break;
 	case WIM_EVENT_CH_SWITCH:
 #if KERNEL_VERSION(6, 7, 0) <= NRC_TARGET_KERNEL_VERSION

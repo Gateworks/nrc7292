@@ -540,7 +540,7 @@ static void nrc_on_fw_ready(struct sk_buff *skb, struct nrc *nw)
 	dev_kfree_skb(skb);
 }
 
-int nrc_fw_start(struct nrc *nw)
+static int nrc_fw_start(struct nrc *nw)
 {
 	struct sk_buff *skb_req, *skb_resp;
 	struct wim_drv_info_param *p;

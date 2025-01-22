@@ -337,6 +337,7 @@ static void nrc_hif_ps_work(struct work_struct *work)
 }
 
 #if defined (CONFIG_TXQ_ORDER_CHANGE_NRC_DRV)
+#if 0
 /*******************************************************************************
 * FunctionName : is_tcp_ack
 * Description : Check if the skb is a tcp ack frame 
@@ -375,6 +376,7 @@ bool is_tcp_ack(struct sk_buff *skb)
 
 	return false;
 }
+#endif
 
 /*******************************************************************************
 * FunctionName : is_mgmt
@@ -382,7 +384,7 @@ bool is_tcp_ack(struct sk_buff *skb)
 * Parameters : skb(socket buffer)
 * Returns : T/F (bool) T:management frame, F:not management frame
 *******************************************************************************/
-bool is_mgmt(struct sk_buff *skb)
+static bool is_mgmt(struct sk_buff *skb)
 {
 	struct hif *hif;
 	struct ieee80211_hdr *mhdr;
@@ -408,7 +410,7 @@ bool is_mgmt(struct sk_buff *skb)
 * Parameters : skb(socket buffer)
 * Returns : T/F (bool)
 *******************************************************************************/
-bool is_urgent_frame(struct sk_buff *skb)
+static bool is_urgent_frame(struct sk_buff *skb)
 {
 	bool ret = false;
 	if (is_mgmt(skb))
@@ -521,7 +523,7 @@ static int nrc_hif_enqueue_skb(struct nrc *nw, struct sk_buff *skb)
 /**
  * nrc_hif_tx_wim - trasmit a wim message to target
  */
-int nrc_xmit_wim(struct nrc *nw, struct sk_buff *skb, enum HIF_SUBTYPE stype)
+static int nrc_xmit_wim(struct nrc *nw, struct sk_buff *skb, enum HIF_SUBTYPE stype)
 {
 	struct hif *hif;
 	struct ieee80211_tx_info *txi = IEEE80211_SKB_CB(skb);
@@ -1110,6 +1112,7 @@ int nrc_hif_reset_device(struct nrc_hif_device *dev)
 	return -1;
 }
 
+#if 0
 int nrc_hif_reset_rx (struct nrc_hif_device *dev)
 {
 	if (dev->hif_ops->reset_rx) {
@@ -1119,6 +1122,7 @@ int nrc_hif_reset_rx (struct nrc_hif_device *dev)
 
 	return -1;
 }
+#endif
 
 int nrc_hif_test_status(struct nrc_hif_device *dev)
 {
