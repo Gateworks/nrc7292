@@ -695,6 +695,12 @@ static int rx_h_vendor(struct nrc_trx_data *rx)
 		ies_offset = offsetof(struct ieee80211_mgmt, u.assoc_req.variable);
 	}
 
+	if (WARN_ON(rx->skb->len < ies_offset))
+		return -EINVAL;
+
+	if (rx->skb->len == ies_offset)
+		return 0;
+
 	for (i = 0; i < ARRAY_SIZE(ann_subs); i++) {
 		pos = cfg80211_find_vendor_ie(
 			VENDOR_OUI, ann_subs[i],
