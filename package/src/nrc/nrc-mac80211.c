@@ -940,6 +940,12 @@ static int nrc_mac_start(struct ieee80211_hw *hw)
 	}
 #endif
 
+	/* validate country code has been set */
+	if (nw->alpha2[0] == '9' && nw->alpha2[1] == '9') {
+		dev_err(nw->dev, "Error: regdomain is not set\n");
+		return -EINVAL;
+	}
+
 	nw->drv_state = NRC_DRV_RUNNING;
 	nw->aid = 0;
 
@@ -3617,6 +3623,9 @@ int nrc_reg_notifier(struct wiphy *wiphy,
 	atomic_set(&nw->bd_down, NRC_BD_READY);
 #endif /* defined(CONFIG_SUPPORT_BD) */
 
+	dev_info(nw->dev, "cfg80211 regulatory domain set to %c%c from %s",
+		 request->alpha2[0], request->alpha2[1],
+		 reg_initiator_name(request->initiator));
 #ifdef CONFIG_NEW_REG_NOTIFIER
 	return;
 #else
