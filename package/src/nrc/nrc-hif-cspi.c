@@ -38,6 +38,8 @@
 #include "nrc-stats.h"
 #include "wim.h"
 
+#define DRV_VERSION __stringify(NRC_VERSION)
+
 #if KERNEL_VERSION(6,12,0) > NRC_TARGET_KERNEL_VERSION
 #include <asm/unaligned.h>
 #endif
@@ -2336,7 +2338,8 @@ static void c_spi_config(struct nrc_spi_priv *priv)
 	}
 
 	dev_info(&priv->spi->dev,
-		"Newracom v1.5.1 (2024.05.10) IEEE802.11 C-SPI: chipid=%04x, sw_id=%04x, board_id=%04X fw_name=%s bd_name=%s",
+		"Newracom %s IEEE802.11 C-SPI: chipid=%04x, sw_id=%04x, board_id=%04X fw_name=%s bd_name=%s",
+		DRV_VERSION,
 		sys->chip_id, sys->sw_id, sys->board_id, fw_name, bd_name);
 	if (sys->sw_id == SW_MAGIC_FOR_BOOT)
 		nrc_dbg(NRC_DBG_HIF, "Boot loader");
@@ -2694,3 +2697,4 @@ MODULE_DESCRIPTION("Newracom 802.11 driver");
 #if KERNEL_VERSION(5, 12, 0) > NRC_TARGET_KERNEL_VERSION
 MODULE_SUPPORTED_DEVICE("Newracom 802.11 devices");
 #endif
+MODULE_VERSION(DRV_VERSION);

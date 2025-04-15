@@ -4,6 +4,8 @@ CHECKPATCH ?= $(KDIR)/scripts/checkpatch.pl
 
 include $(KDIR)/.config
 
+NRC_VERSION ?= "v1.5.1-g$(shell git rev-parse --verify HEAD 2>/dev/null | cut -c1-12)"
+
 M_SRC = nrc
 
 obj-m += $(M_SRC).o
@@ -30,6 +32,7 @@ ccflags-y := \
 	-DENABLE_DYNAMIC_PS \
 	-DCONFIG_MAC80211_MESH
 
+ccflags-y += "-DNRC_VERSION=$(NRC_VERSION)"
 ldflags-y += -T$(M)/nrc.lds
 
 
