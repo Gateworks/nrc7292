@@ -163,8 +163,6 @@ int nrc_wim_change_sta(struct nrc *nw, struct ieee80211_vif *vif,
 				    tlv_len(sizeof(*p)));
 
 	p = nrc_wim_skb_add_tlv(skb, WIM_TLV_STA_PARAM, sizeof(*p), NULL);
-	memset(p, 0, sizeof(*p));
-
 	p->cmd = cmd;
 	p->flags = 0;
 	p->sleep = sleep;
@@ -205,7 +203,18 @@ int nrc_wim_hw_scan(struct nrc *nw, struct ieee80211_vif *vif,
 
 	/* WIM_TL_SCAN_PARAM */
 	p = nrc_wim_skb_add_tlv(skb, WIM_TLV_SCAN_PARAM, sizeof(*p), NULL);
-	memset(p, 0, sizeof(*p));
+	memset(p->mac_addr, 0, sizeof(p->mac_addr));
+	memset(p->mac_addr_mask, 0, sizeof(p->mac_addr_mask));
+	p->rate = 0;
+	p->scan_flag = 0;
+	p->n_ssids = 0;
+	p->n_bssids = 0;
+	p->n_channels = 0;
+	memset(p->ssid, 0, sizeof(p->ssid));
+	memset(p->bssid, 0, sizeof(p->bssid));
+	memset(p->channel, 0, sizeof(p->channel));
+	memset(p->s1g_channel, 0, sizeof(p->s1g_channel));
+	memset(&p->preq_ies, 0, sizeof(p->preq_ies));
 
 	if (WARN_ON(req->n_channels > WIM_MAX_SCAN_CHANNEL))
 		req->n_channels = WIM_MAX_SCAN_CHANNEL;
@@ -388,8 +397,13 @@ int nrc_wim_install_key(struct nrc *nw, enum set_key_cmd cmd,
 				tlv_len(sizeof(*p)));
 
 	p = nrc_wim_skb_add_tlv(skb, WIM_TLV_KEY_PARAM, sizeof(*p), NULL);
-
-	memset(p, 0, sizeof(*p));
+	p->cipher_type = 0;
+	p->key_index = 0;
+	memset(p->mac_addr, 0, sizeof(p->mac_addr));
+	p->aid = 0;
+	p->key_flags = 0;
+	p->key_len = 0;
+	memset(p->key, 0, sizeof(p->key));
 
 	if (sta) {
 		addr = sta->addr;
