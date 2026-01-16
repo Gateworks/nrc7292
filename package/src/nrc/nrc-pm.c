@@ -33,6 +33,7 @@
 #include <linux/spi/spi.h>
 #include <linux/ieee80211.h>
 
+#include "compat.h"
 #include "nrc-mac80211.h"
 #include "nrc-hif.h"
 #include "wim.h"

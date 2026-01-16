@@ -1473,7 +1473,11 @@ void nrc_mac_add_tlv_channel(struct sk_buff *skb,
 }
 #endif /* CONFIG_SUPPORT_CHANNEL_INFO */
 
+#if MAC80211_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+static int nrc_mac_config(struct ieee80211_hw *hw, int radio_idx, u32 changed)
+#else
 static int nrc_mac_config(struct ieee80211_hw *hw, u32 changed)
+#endif
 {
 	struct nrc *nw = hw->priv;
 	struct wim_pm_param *p;
@@ -2798,7 +2802,11 @@ static void nrc_mac_get_et_stats(struct ieee80211_hw *hw,
 }
 #endif
 
+#if MAC80211_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+static int nrc_mac_set_rts_threshold(struct ieee80211_hw *hw, int radio_idx, u32 value)
+#else
 static int nrc_mac_set_rts_threshold(struct ieee80211_hw *hw, u32 value)
+#endif
 {
 	struct sk_buff *skb;
 	struct nrc *nw = hw->priv;
@@ -3413,7 +3421,11 @@ static u32 nrc_get_expected_throughput(struct ieee80211_sta *sta)
 }
 
 #define MPDU_LEN_THRESHOLD			511 		/* See lmac_11ah.h  */
+#if MAC80211_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+static int nrc_set_frag_threshold(struct ieee80211_hw *hw, int radio_idx, u32 value)
+#else
 static int nrc_set_frag_threshold(struct ieee80211_hw *hw, u32 value)
+#endif
 {
 	struct nrc *nw = hw->priv;
 

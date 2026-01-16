@@ -17,6 +17,7 @@
 #include <linux/platform_device.h>
 #include <linux/seq_file.h>
 #include <linux/math64.h>
+#include "compat.h"
 #include "nrc-debug.h"
 #include "nrc-hif.h"
 #include "nrc-wim-types.h"
@@ -111,8 +112,13 @@ int nrc_mac_dump_frame(struct nrc *nw, struct sk_buff *skb, const char *prefix)
 		end = skb->data + skb->len;
 		tim = cfg80211_find_ie(WLAN_EID_TIM, start, end - start);
 		if (tim &&
+#if MAC80211_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+		    ieee80211_check_tim((struct ieee80211_tim_ie *)&tim[2],
+					tim[1], nw->aid, false))
+#else
 		    ieee80211_check_tim((struct ieee80211_tim_ie *)&tim[2],
 					tim[1], nw->aid))
+#endif
 			str = "(tim)";
 
 		nrc_dbg(NRC_DBG_MAC, "%s beacon %s", prefix, str);

@@ -19,6 +19,7 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 
+#include "compat.h"
 #include "nrc-hif.h"
 #include "nrc-build-config.h"
 

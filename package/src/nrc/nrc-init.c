@@ -20,6 +20,7 @@
 #include <linux/device.h>
 #include <linux/platform_device.h>
 #include <linux/gpio.h>
+#include "compat.h"
 #include "nrc.h"
 #include "nrc-init.h"
 #include "nrc-hif.h"
